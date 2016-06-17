@@ -288,10 +288,11 @@ if Code.ensure_loaded?(Postgrex) do
     defp join(%Query{joins: []}, _sources), do: []
     defp join(%Query{joins: joins} = query, sources) do
       Enum.map_join(joins, " ", fn
-        %JoinExpr{on: %QueryExpr{expr: expr}, qual: qual, ix: ix, source: source} ->
+        %JoinExpr{on: %QueryExpr{expr: expr}, qual: qual, ix: ix, source: source, opts: opts} ->
           {join, name} = get_source(query, sources, ix, source)
           qual = join_qual(qual)
-          "#{qual} JOIN " <> join <> " AS " <> name <> " ON " <> expr(expr, sources, query)
+          lateral = join_lateral(opts)
+          "#{qual} JOIN #{lateral}" <> join <> " AS " <> name <> " ON " <> expr(expr, sources, query)
       end)
     end
 
@@ -299,6 +300,12 @@ if Code.ensure_loaded?(Postgrex) do
     defp join_qual(:left),  do: "LEFT OUTER"
     defp join_qual(:right), do: "RIGHT OUTER"
     defp join_qual(:full),  do: "FULL OUTER"
+
+    defp join_lateral(opts) do
+      if Keyword.get(opts, :lateral) do
+         "LATERAL "
+      end
+    end
 
     defp delete_all_where([], query, sources), do: where(query, sources)
     defp delete_all_where(_joins, %Query{wheres: wheres} = query, sources) do

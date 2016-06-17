@@ -103,9 +103,9 @@ defmodule Ecto.Query.Builder.Join do
   If possible, it does all calculations at compile time to avoid
   runtime work.
   """
-  @spec build(Macro.t, atom, [Macro.t], Macro.t, Macro.t, Macro.t, Macro.Env.t) ::
+  @spec build(Macro.t, atom, [Macro.t], Macro.t, Macro.t, Macro.t, Macro.t, Macro.Env.t) ::
               {Macro.t, Keyword.t, non_neg_integer | nil}
-  def build(query, qual, binding, expr, on, count_bind, env) do
+  def build(query, qual, binding, expr, on, opts, count_bind, env) do
     binding = Builder.escape_binding(binding)
     {join_bind, join_expr, join_assoc, join_params} = escape(expr, binding, env)
     join_params = Builder.escape_params(join_params)
@@ -131,7 +131,7 @@ defmodule Ecto.Query.Builder.Join do
         %JoinExpr{qual: unquote(qual), source: unquote(join_expr),
                   on: unquote(join_on), assoc: unquote(join_assoc),
                   file: unquote(env.file), line: unquote(env.line),
-                  params: unquote(join_params)}
+                  params: unquote(join_params), opts: unquote(opts)}
       end
 
     {count_bind, quoted} =

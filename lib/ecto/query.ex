@@ -284,7 +284,7 @@ defmodule Ecto.Query do
 
   defmodule JoinExpr do
     @moduledoc false
-    defstruct [:qual, :source, :on, :file, :line, :assoc, :ix, params: %{}]
+    defstruct [:qual, :source, :on, :file, :line, :assoc, :ix, params: %{}, opts: []]
   end
 
   defmodule Tagged do
@@ -464,7 +464,7 @@ defmodule Ecto.Query do
       end
 
     {t, on} = collect_on(t, nil)
-    {quoted, binds, count_bind} = Join.build(quoted, qual, binds, expr, on, count_bind, env)
+    {quoted, binds, count_bind} = Join.build(quoted, qual, binds, expr, on, [], count_bind, env)
     from(t, env, count_bind, quoted, binds)
   end
 
@@ -520,7 +520,7 @@ defmodule Ecto.Query do
       Post
         |> join(:left, [p], c in assoc(p, :comments))
         |> select([p, c], {p, c})
-        
+
       Post
         |> join(:left, [p], c in Comment, c.post_id == p.id and c.is_visible == true)
         |> select([p, c], {p, c})
@@ -535,8 +535,8 @@ defmodule Ecto.Query do
 
   This style is discouraged due to its complexity.
   """
-  defmacro join(query, qual, binding \\ [], expr, on \\ nil) do
-    Join.build(query, qual, binding, expr, on, nil, __CALLER__)
+  defmacro join(query, qual, binding \\ [], expr, on \\ nil, opts \\ []) do
+    Join.build(query, qual, binding, expr, on, opts, nil, __CALLER__)
     |> elem(0)
   end
 
